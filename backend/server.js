@@ -4,6 +4,7 @@ const http = require('http');
 const socketIo = require('socket.io');
 const cors = require('cors');
 const path = require('path');
+const DEV_CONSOLE_PASSWORD = '';
 
 const app = express();
 const server = http.createServer(app);
@@ -20,9 +21,10 @@ app.use(cors({
 
 let players = {};
 let globals = {
-  speed: 10,
-  gravity: 0.1,
-  friction: 0.98
+  speed: 6,
+  gravity: 0.17,
+  friction: 0.93,
+  jumpPower: 6.9
 };
 
 // Serve the dev console UI
@@ -35,12 +37,10 @@ const updatePlayerPosition = (player) => {
     player.vx = -globals.speed;
   } else if (player.keys['KeyD']) {
     player.vx = globals.speed;
-  } else {
-    player.vx = 0;
-  }
+  } 
 
   if (player.keys['Space'] && player.isGrounded) {
-    player.vy = -5;
+    player.vy = -globals.jumpPower;
     player.isGrounded = false;
   }
 
@@ -66,10 +66,11 @@ const updatePlayerPosition = (player) => {
 };
 
 io.on('connection', (socket) => {
-  console.log('A user connected:', socket.id);
+  const isDevConsole = socket.handshake.headers.referer.includes('dev-console');
 
-  // Send the current global parameters to the new player
-  socket.emit('globalParams', globals);
+
+  if (!isDevConsole) {
+  console.log('A user connected:', socket.id);
 
   // Add new player to the players object
   players[socket.id] = {
@@ -89,6 +90,7 @@ io.on('connection', (socket) => {
 
   // Notify other players of the new player
   socket.broadcast.emit('newPlayer', players[socket.id]);
+}
 
   // Handle player key press
   socket.on('keyPress', (keyData) => {
@@ -102,6 +104,17 @@ io.on('connection', (socket) => {
     console.log('User disconnected:', socket.id);
     delete players[socket.id];
     io.emit('playerDisconnected', socket.id);
+  });
+
+  // Handle updateGlobals event
+  socket.on('updateGlobals', (newGlobals) => {
+    globals = { ...globals, ...newGlobals };
+  });
+
+  // Handle password checking
+  socket.on('checkPassword', (password) => {
+    const result = password === DEV_CONSOLE_PASSWORD;
+    socket.emit('passwordResult', result);
   });
 });
 

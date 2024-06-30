@@ -8,53 +8,101 @@
 </head>
 <body>
   <h1>Dev Console</h1>
+  <label for="password">Password:</label>
+  <input type="password" id="password">
+  <button id="submit-password">Submit</button>
+  <br>
   <label for="speed">Speed: <span id="speed-value">2</span></label>
-  <input type="range" id="speed" min="1" max="10" step="0.1" value="2">
+  <input type="range" id="speed" min="1" max="10" step="0.1" value="2" disabled>
   <br>
   <label for="gravity">Gravity: <span id="gravity-value">0.1</span></label>
-  <input type="range" id="gravity" min="0.01" max="1" step="0.01" value="0.1">
+  <input type="range" id="gravity" min="0.01" max="1" step="0.01" value="0.1" disabled>
   <br>
   <label for="friction">Friction: <span id="friction-value">0.98</span></label>
-  <input type="range" id="friction" min="0.5" max="1" step="0.01" value="0.98">
+  <input type="range" id="friction" min="0.5" max="1" step="0.01" value="0.98" disabled>
+  <br>
+  <label for="jumpPower">Jump Power: <span id="jumpPower-value">5</span></label>
+  <input type="range" id="jumpPower" min="1" max="20" step="0.1" value="5" disabled>
   <br>
   <script>
     const socket = io('http://localhost:3001');
 
+    const passwordInput = document.getElementById('password');
+    const submitPasswordButton = document.getElementById('submit-password');
     const speedSlider = document.getElementById('speed');
     const gravitySlider = document.getElementById('gravity');
     const frictionSlider = document.getElementById('friction');
+    const jumpPowerSlider = document.getElementById('jumpPower');
 
     const speedValue = document.getElementById('speed-value');
     const gravityValue = document.getElementById('gravity-value');
     const frictionValue = document.getElementById('friction-value');
+    const jumpPowerValue = document.getElementById('jumpPower-value');
+
+    let isAuthenticated = false;
+
+    submitPasswordButton.addEventListener('click', () => {
+      const password = passwordInput.value;
+      socket.emit('checkPassword', password);
+    });
+
+    socket.on('passwordResult', (result) => {
+      if (result) {
+        isAuthenticated = true;
+        speedSlider.disabled = false;
+        gravitySlider.disabled = false;
+        frictionSlider.disabled = false;
+        jumpPowerSlider.disabled = false;
+        passwordInput.disabled = true;
+        submitPasswordButton.disabled = true;
+      } else {
+        alert('Incorrect password');
+      }
+    });
 
     speedSlider.addEventListener('input', () => {
-      const value = parseFloat(speedSlider.value);
-      speedValue.textContent = value;
-      socket.emit('updateGlobals', { speed: value });
+      if (isAuthenticated) {
+        const value = parseFloat(speedSlider.value);
+        speedValue.textContent = value;
+        socket.emit('updateGlobals', { speed: value });
+      }
     });
 
     gravitySlider.addEventListener('input', () => {
-      const value = parseFloat(gravitySlider.value);
-      gravityValue.textContent = value;
-      socket.emit('updateGlobals', { gravity: value });
+      if (isAuthenticated) {
+        const value = parseFloat(gravitySlider.value);
+        gravityValue.textContent = value;
+        socket.emit('updateGlobals', { gravity: value });
+      }
     });
 
     frictionSlider.addEventListener('input', () => {
-      const value = parseFloat(frictionSlider.value);
-      frictionValue.textContent = value;
-      socket.emit('updateGlobals', { friction: value });
+      if (isAuthenticated) {
+        const value = parseFloat(frictionSlider.value);
+        frictionValue.textContent = value;
+        socket.emit('updateGlobals', { friction: value });
+      }
+    });
+
+    jumpPowerSlider.addEventListener('input', () => {
+      if (isAuthenticated) {
+        const value = parseFloat(jumpPowerSlider.value);
+        jumpPowerValue.textContent = value;
+        socket.emit('updateGlobals', { jumpPower: value });
+      }
     });
 
     socket.on('globalParams', (globals) => {
       speedSlider.value = globals.speed;
       gravitySlider.value = globals.gravity;
       frictionSlider.value = globals.friction;
+      jumpPowerSlider.value = globals.jumpPower;
 
       speedValue.textContent = globals.speed;
       gravityValue.textContent = globals.gravity;
       frictionValue.textContent = globals.friction;
+      jumpPowerValue.textContent = globals.jumpPower;
     });
   </script>
 </body>
-</html>s
+</html>
