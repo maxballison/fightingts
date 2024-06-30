@@ -17,11 +17,6 @@ interface Player {
   keys: { [key: string]: boolean };
 }
 
-interface Globals {
-  speed: number;
-  gravity: number;
-  friction: number;
-}
 
 const Game: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -38,7 +33,6 @@ const Game: React.FC = () => {
     keys: {}
   });
   const keys = useRef<{ [key: string]: boolean }>({});
-  const [globals, setGlobals] = useState<Globals>({ speed: 2, gravity: 0.1, friction: 0.98 });
 
   useEffect(() => {
     socket.on('currentPlayers', (players: { [key: string]: Player }) => {
@@ -67,10 +61,6 @@ const Game: React.FC = () => {
       });
     });
 
-    socket.on('globalParams', (newGlobals: Globals) => {
-      setGlobals(newGlobals);
-    });
-
     socket.on('updatePlayers', (serverPlayers: { [key: string]: Player }) => {
       setPlayers(serverPlayers);
 
@@ -87,7 +77,6 @@ const Game: React.FC = () => {
       socket.off('newPlayer');
       socket.off('playerMoved');
       socket.off('playerDisconnected');
-      socket.off('globalParams');
       socket.off('updatePlayers');
     };
   }, []);
@@ -112,50 +101,11 @@ const Game: React.FC = () => {
     };
   }, []);
 
-  const updatePlayerPosition = useCallback(() => {
-    const player = playerRef.current;
 
-    if (keys.current['KeyA']) {
-      player.vx = -globals.speed;
-    } else if (keys.current['KeyD']) {
-      player.vx = globals.speed;
-    } else {
-      player.vx = 0;
-    }
-
-    if (keys.current['Space'] && player.isGrounded) {
-      player.vy = -5;
-      player.isGrounded = false;
-    }
-
-    player.vy += globals.gravity; // gravity
-    player.vx *= globals.friction; // friction
-
-    player.x += player.vx;
-    player.y += player.vy;
-
-    if (player.y > canvasRef.current!.height - 50) {
-      player.y = canvasRef.current!.height - 50;
-      player.vy = 0;
-      player.isGrounded = true;
-    }
-
-    // Handle attack
-    if (keys.current['KeyJ']) {
-      player.isAttacking = true;
-      player.attackBox.x = player.x + (player.vx > 0 ? 50 : -50);
-      player.attackBox.y = player.y;
-    } else {
-      player.isAttacking = false;
-    }
-
-    socket.emit('playerMovement', { x: player.x, y: player.y, vx: player.vx, vy: player.vy, isGrounded: player.isGrounded, isAttacking: player.isAttacking, attackBox: player.attackBox });
-  }, [globals]);
 
   useEffect(() => {
     let animationFrameId: number;
     const gameLoop = () => {
-      updatePlayerPosition();
       animationFrameId = requestAnimationFrame(gameLoop);
     };
     
@@ -164,7 +114,7 @@ const Game: React.FC = () => {
     return () => {
       cancelAnimationFrame(animationFrameId);
     };
-  }, [updatePlayerPosition]);
+  }, []);
 
   useEffect(() => {
   const canvas = canvasRef.current;
@@ -173,7 +123,7 @@ const Game: React.FC = () => {
     if (canvas && ctx) {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       Object.values(players).forEach((player) => {
-        ctx.fillStyle = 'blue';
+        ctx.fillStyle = player.id === socket.id ? 'green' : 'blue';
         ctx.fillRect(player.x, player.y, 50, 50);
   
         if (player.isAttacking) {
