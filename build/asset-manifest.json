@@ -1,0 +1,15 @@
+{
+  "files": {
+    "main.css": "/fightingts/static/css/main.e6dd6be0.css",
+    "main.js": "/fightingts/static/js/main.ae745829.js",
+    "static/js/453.281e9968.chunk.js": "/fightingts/static/js/453.281e9968.chunk.js",
+    "index.html": "/fightingts/index.html",
+    "main.e6dd6be0.css.map": "/fightingts/static/css/main.e6dd6be0.css.map",
+    "main.ae745829.js.map": "/fightingts/static/js/main.ae745829.js.map",
+    "453.281e9968.chunk.js.map": "/fightingts/static/js/453.281e9968.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.e6dd6be0.css",
+    "static/js/main.ae745829.js"
+  ]
+}
