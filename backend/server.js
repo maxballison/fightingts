@@ -5,6 +5,8 @@ const socketIo = require('socket.io');
 const cors = require('cors');
 const path = require('path');
 const DEV_CONSOLE_PASSWORD = '';
+import config from './config'
+
 
 const app = express();
 
@@ -12,13 +14,13 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIo(server, {
   cors: {
-    origin: process.env.REACT_APP_SOCKET_URL || 'http://localhost:3000',
+    origin: config.FRONTENDURL,
     methods: ["GET", "POST"]
   }
 });
 
 app.use(cors({
-  origin: process.env.REACT_APP_SOCKET_URL || 'http://localhost:3000'
+  origin: config.FRONTENDURL
 }));
 
 

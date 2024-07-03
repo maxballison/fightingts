@@ -2,8 +2,9 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import io from 'socket.io-client';
 import './App.css';
+import config from './config'
 
-const socket = io(process.env.REACT_APP_SOCKET_URL || "http://localhost:3001");
+const socket = io(config);
 
 interface Player {
   id: string;
