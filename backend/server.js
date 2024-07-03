@@ -17,6 +17,11 @@ const io = socketIo(server, {
   }
 });
 
+app.use(cors({
+  origin: process.env.REACT_APP_SOCKET_URL || 'http://localhost:3000'
+}));
+
+
 let players = {};
 let globals = {
   speed: 6,
