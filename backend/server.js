@@ -12,14 +12,10 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIo(server, {
   cors: {
-    origin: "https://fightingts-1.onrender.com",
+    origin: process.env.REACT_APP_SOCKET_URL || 'http://localhost:3000',
     methods: ["GET", "POST"]
   }
 });
-
-app.use(cors({
-  origin: "https://fightingts-1.onrender.com"
-}));
 
 let players = {};
 let globals = {
